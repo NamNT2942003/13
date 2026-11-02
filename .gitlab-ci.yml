@@ -1,0 +1,49 @@
+image: eclipse-temurin:17-jdk-alpine
+
+variables:
+  # Cấu hình biến môi trường cho PostgreSQL Service
+  POSTGRES_DB: testdb_ci
+  POSTGRES_USER: postgres_user
+  POSTGRES_PASSWORD: postgres_password
+  POSTGRES_HOST_AUTH_METHOD: trust
+  # Lưu cache của Gradle bên trong thư mục project để GitLab CI có thể cache được
+  GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
+
+# Cấu hình tối ưu Caching cho Gradle giữa các lần chạy pipeline
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+stages:
+  - test
+  - build
+
+# -------------------------------------------------------------
+# Giai đoạn 1: Chạy kiểm thử tự động với PostgreSQL Service
+# -------------------------------------------------------------
+run_tests:
+  stage: test
+  services:
+    - name: postgres:15-alpine
+      alias: postgres
+  before_script:
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew test
+
+# -------------------------------------------------------------
+# Giai đoạn 2: Build và lưu trữ Artifacts (Không chạy lại test)
+# -------------------------------------------------------------
+build_project:
+  stage: build
+  before_script:
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew assemble
+  artifacts:
+    name: "$CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG"
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 week
