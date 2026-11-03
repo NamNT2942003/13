@@ -1,0 +1,22 @@
+groups:
+  - name: host_alerts
+    rules:
+      # Cảnh báo CPU máy chủ vượt quá 90% liên tục trong 1 phút
+      - alert: HostHighCpuUsage
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[1m])) * 100)) > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host CPU usage is dangerously high (instance {{ $labels.instance }})"
+          description: "CPU load exceeds 90% for more than 1 minute. Current value: {{ $value | printf \"%.2f\" }}%"
+
+      # Cảnh báo RAM sử dụng vượt quá 90% liên tục trong 1 phút
+      - alert: HostHighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host Memory usage is dangerously high (instance {{ $labels.instance }})"
+          description: "RAM usage exceeds 90% for more than 1 minute. Current value: {{ $value | printf \"%.2f\" }}%"

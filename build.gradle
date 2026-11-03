@@ -19,8 +19,13 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     
-    // Driver kết nối PostgreSQL
+    // Actuator & Prometheus Metrics
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
+    // Driver kết nối PostgreSQL & H2 In-Memory fallback
     runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.h2database:h2'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
@@ -28,3 +33,4 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
